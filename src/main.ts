@@ -281,6 +281,7 @@ async function loadLayout(jsonPath: string, startCol: number, startRow: number) 
 
 // --- Обработка ввода с клавиатуры ---
 input.addEventListener('keyup', async (e) => {
+  // Запрещаем браузеру скроллить страницу стрелками
   if (['Enter', 'Backspace', 'ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown', ' '].includes(e.key)) {
     e.preventDefault();
   }
@@ -322,12 +323,38 @@ input.addEventListener('keyup', async (e) => {
       writeTextToGrid('Команда не найдена.', firstCharCol, startRow);
       cursor.row = startRow + 2;
     }
-  } else if (e.key === 'Backspace') {
+  } 
+  // --- НОВОЕ: Перемещение стрелками ---
+  else if (e.key === 'ArrowLeft') {
+    if (cursor.col > 0) cursor.col -= 1;
+  } 
+  else if (e.key === 'ArrowRight') {
+    cursor.col += 1;
+  } 
+  else if (e.key === 'ArrowUp') {
+    if (cursor.row > 0) cursor.row -= 1;
+  } 
+  else if (e.key === 'ArrowDown') {
+    cursor.row += 1;
+  }
+  else if (e.key === 'Home') {
+    cursor.col = 0;
+  }
+  else if (e.key === 'End') {
+    // Ищем конец текущей строки
+    let endCol = 0;
+    while (grid.has(getCellKey(endCol, cursor.row))) {
+      endCol++;
+    }
+    cursor.col = endCol;
+  }
+  else if (e.key === 'Backspace') {
     if (cursor.col > 0) {
       cursor.col -= 1;
       grid.delete(getCellKey(cursor.col, cursor.row));
     }
-  } else if (e.key.length === 1) {
+  } 
+  else if (e.key.length === 1) {
     grid.set(getCellKey(cursor.col, cursor.row), e.key);
     cursor.col += 1;
   }
@@ -341,6 +368,49 @@ window.addEventListener('keydown', (e) => {
   }
 });
 
+// --- Стартовый экран ---
+function initStartScreen() {
+  // Центр экрана в пикселях
+  const centerX = window.innerWidth / 2;
+  const centerY = window.innerHeight / 2;
+
+  // 1. Добавляем логотип по центру
+  const logoWidth = 600; // УВЕЛИЧЕНО В 2 РАЗА (было 300)
+  const logoImg = new Image();
+  logoImg.src = '/images/logo_black.png';
+  
+  logoImg.onload = () => {
+    const logoHeight = logoWidth * (logoImg.height / logoImg.width);
+    
+    // Вычисляем координаты "мирового" пространства
+    const x = (centerX - logoWidth / 2 - offsetX) / scale - 15;
+    const y = (centerY - logoHeight / 2 - offsetY) / scale - 20; // Чуть выше центра
+    
+    images.push({ img: logoImg, x, y, width: logoWidth, height: logoHeight });
+    drawStartText();
+  };
+}
+
+function drawStartText() {
+  const text = "Пиши + Enter";
+  const centerCol = Math.floor((window.innerWidth / 2) / CELL_WIDTH);
+  
+  // Вычисляем, с какой колонки начать, чтобы текст был ровно по центру
+  const startCol = centerCol - Math.floor(text.length / 2);
+  
+  // Ставим текст чуть ниже логотипа
+  const startRow = Math.floor((window.innerHeight / 2) / CELL_HEIGHT) + 6; // Сдвинули чуть ниже из-за размера
+  
+  writeTextToGrid(text, startCol, startRow);
+  
+  // Ставим курсор чуть ниже надписи
+  cursor.col = startCol;
+  cursor.row = startRow + 3;
+  
+  draw();
+}
+
 // --- Старт ---
 resize();
+initStartScreen();
 input.focus();
