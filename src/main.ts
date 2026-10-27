@@ -1,6 +1,9 @@
 // src/main.ts
 import * as fuzz from 'fuzzball';
 
+// Получаем базовый путь (на GitHub Pages это будет '/pionc/', локально '/')
+const BASE_URL = import.meta.env.BASE_URL;
+
 const canvas = document.createElement('canvas');
 const container = document.getElementById('crt-container');
 if (container) {
@@ -19,19 +22,14 @@ const FONT = '20px "Courier New", monospace';
 let cursor = { col: 0, row: 0 };
 const grid = new Map<string, string>(); 
 
-// Смещение камеры
 let offsetX = 0;
 let offsetY = 0;
-
-// Масштаб (1 = 100%)
 let scale = 1;
 
-// Состояние для перетаскивания
 let isPanning = false;
 let lastMouseX = 0;
 let lastMouseY = 0;
 
-// Массив для хранения картинок
 interface CanvasImage {
   img: HTMLImageElement;
   x: number; 
@@ -41,7 +39,6 @@ interface CanvasImage {
 }
 const images: CanvasImage[] = [];
 
-// НОВОЕ: Массив для кликабельных ссылок
 interface ClickableLink {
   x: number; y: number; w: number; h: number; url: string;
 }
@@ -80,8 +77,10 @@ function writeTextToGrid(text: string, startCol: number, startRow: number) {
 }
 
 function addImageToCanvas(url: string, startCol: number, startRow: number, width: number = 400) {
+  const finalUrl = url.startsWith('/') ? BASE_URL + url.slice(1) : url;
+  
   const img = new Image();
-  img.src = url;
+  img.src = finalUrl;
   img.onload = () => {
     const aspectRatio = img.height / img.width;
     const height = width * aspectRatio;
@@ -90,12 +89,11 @@ function addImageToCanvas(url: string, startCol: number, startRow: number, width
     images.push({ img, x, y, width, height });
     draw(); 
   };
-  img.onerror = () => console.error('Ошибка картинки:', url);
+  img.onerror = () => console.error('Ошибка картинки:', finalUrl);
 }
 
 // --- Отрисовка ---
 function draw() {
-  // Очищаем фон
   ctx.clearRect(0, 0, canvas.width, canvas.height);
 
   ctx.save();
@@ -113,7 +111,6 @@ function draw() {
   ctx.textAlign = 'center';
   ctx.textBaseline = 'middle';
   
-  // Неоновое свечение для текста
   ctx.shadowColor = 'rgba(255, 255, 255, 0.7)';
   ctx.shadowBlur = 4;
 
@@ -124,7 +121,6 @@ function draw() {
     ctx.fillText(char, x, y);
   }
 
-  // Отключаем свечение для курсора
   ctx.shadowBlur = 0;
 
   // 3. Рисуем курсор
@@ -154,7 +150,7 @@ canvas.addEventListener('mousedown', (e) => {
     for (const link of clickableLinks) {
       if (mouseX >= link.x && mouseX <= link.x + link.w && mouseY >= link.y && mouseY <= link.y + link.h) {
         window.open(link.url, '_blank');
-        return; // Выходим, чтобы курсор не сдвигался
+        return;
       }
     }
   }
@@ -244,12 +240,14 @@ function parseCommand(input: string): string | null {
   const normalized = input.trim().toLowerCase();
   if (!normalized) return null;
 
+  // 1. Поиск точного совпадения
   for (const [key, data] of Object.entries(commandPool)) {
     if (key === normalized || data.aliases.includes(normalized)) {
       return data.target;
     }
   }
 
+  // 2. Нечёткий поиск (fuzzy)
   const allTerms: { term: string, target: string }[] = [];
   
   for (const [key, data] of Object.entries(commandPool)) {
@@ -275,12 +273,13 @@ function parseCommand(input: string): string | null {
 // --- Загрузка JSON-лейаута ---
 async function loadLayout(jsonPath: string, startCol: number, startRow: number) {
   try {
-    const response = await fetch(jsonPath);
+    const finalPath = jsonPath.startsWith('/') ? BASE_URL + jsonPath.slice(1) : jsonPath;
+    const response = await fetch(finalPath);
+    
     if (!response.ok) throw new Error('Файл не найден');
     
     const objects = await response.json();
     
-    // Нормализация
     let minCol = Infinity;
     let minRow = Infinity;
     
@@ -337,11 +336,9 @@ async function loadLayout(jsonPath: string, startCol: number, startRow: number) 
           ctx.textAlign = oldAlign;
           ctx.textBaseline = oldBaseline;
         } else {
-          // Обычный текст
           writeTextToGrid(obj.content, finalCol, finalRow);
         }
 
-        // Сохраняем зону для клика, если есть ссылка
         if (obj.link) {
           const tScale = obj.scale || 1;
           const lines = obj.content.split('\n');
@@ -361,7 +358,7 @@ async function loadLayout(jsonPath: string, startCol: number, startRow: number) 
     draw();
   } catch (error) {
     console.error('Ошибка загрузки лейаута:', error);
-    writeTextToGrid(`[Ошибка загрузки ${jsonPath}]`, startCol, startRow);
+    writeTextToGrid(`[Ошибка загрузки]`, startCol, startRow);
     draw();
   }
 }
@@ -459,16 +456,20 @@ function initStartScreen() {
 
   const logoWidth = 600; 
   const logoImg = new Image();
-  logoImg.src = '/images/logo_black.png';
+  
+  logoImg.src = BASE_URL + 'images/logo_black.png';
   
   logoImg.onload = () => {
     const logoHeight = logoWidth * (logoImg.height / logoImg.width);
-    const x = (centerX - logoWidth / 2 - offsetX) / scale;
+    const x = (centerX - logoWidth / 2 - offsetX) / scale - 15;
     const y = (centerY - logoHeight / 2 - offsetY) / scale - 20; 
     
     images.push({ img: logoImg, x, y, width: logoWidth, height: logoHeight });
     drawStartText();
   };
+  logoImg.onerror = () => {
+    console.error('Логотип не найден по пути:', logoImg.src);
+  }
 }
 
 function drawStartText() {
