@@ -184,10 +184,6 @@ const commandPool: Record<string, CommandData> = {
     target: '/portfolio.json', 
     aliases: ['работы', 'проекты', 'галерея', 'мои работы'] 
   },
-  'привет': { 
-    target: 'text:Привет! Это тестовый ответ.', 
-    aliases: ['хай', 'здравствуй', 'приветствие'] 
-  },
 };
 
 function parseCommand(input: string): string | null {
@@ -222,6 +218,52 @@ function parseCommand(input: string): string | null {
   }
 
   return null;
+}
+
+async function loadLayout(jsonPath: string, startCol: number, startRow: number) {
+  try {
+    const response = await fetch(jsonPath);
+    if (!response.ok) throw new Error('Файл не найден');
+    
+    const objects = await response.json();
+    
+    // Находим минимальные координаты X и Y среди всех объектов в JSON.
+    // Это позволит нам "нормализовать" лейаут, чтобы он начинался с 0,0,
+    // независимо от того, где вы нарисовали его в редакторе.
+    let minCol = Infinity;
+    let minRow = Infinity;
+    
+    objects.forEach((obj: any) => {
+      if (obj.col < minCol) minCol = obj.col;
+      if (obj.row < minRow) minRow = obj.row;
+    });
+
+    // Если объектов нет, ничего не делаем
+    if (minCol === Infinity) return;
+
+    // Проходимся по объектам и рисуем их со смещением
+    objects.forEach((obj: any) => {
+      // Вычисляем относительную позицию (отнимаем минимальную)
+      const relativeCol = obj.col - minCol;
+      const relativeRow = obj.row - minRow;
+
+      // Итоговая позиция = позиция команды + относительная позиция
+      const finalCol = startCol + relativeCol;
+      const finalRow = startRow + relativeRow + 1;
+
+      if (obj.type === 'text') {
+        writeTextToGrid(obj.content, finalCol, finalRow);
+      } else if (obj.type === 'image') {
+        addImageToCanvas(obj.content, finalCol, finalRow, obj.width || 300);
+      }
+    });
+    
+    draw();
+  } catch (error) {
+    console.error('Ошибка загрузки лейаута:', error);
+    writeTextToGrid(`[Ошибка загрузки ${jsonPath}]`, startCol, startRow);
+    draw();
+  }
 }
 
 // --- Обработка ввода с клавиатуры ---
@@ -260,9 +302,10 @@ input.addEventListener('keyup', async (e) => {
         writeTextToGrid(textResponse, firstCharCol, startRow);
         cursor.row = startRow + textResponse.split('\n').length + 1;
       } else if (result.endsWith('.json')) {
-        // Заглушка для JSON-лейаута
-        writeTextToGrid(`[Здесь загрузится файл ${result}]`, firstCharCol, startRow);
-        cursor.row = startRow + 2;
+        // Вызываем функцию загрузки
+        loadLayout(result, firstCharCol, startRow);
+        // Сдвигаем курсор вниз, чтобы он не наложился на лейаут (примерно)
+        cursor.row = startRow + 30;
       }
     } else {
       writeTextToGrid('Команда не найдена.', firstCharCol, startRow);
