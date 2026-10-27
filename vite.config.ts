@@ -1,6 +1,7 @@
 import { defineConfig } from 'vite';
 
 export default defineConfig({
+  base: '/pionc/',
   server: {
     proxy: {
       // Все запросы, начинающиеся с /api-search, будут перенаправляться

@@ -41,6 +41,12 @@ interface CanvasImage {
 }
 const images: CanvasImage[] = [];
 
+// НОВОЕ: Массив для кликабельных ссылок
+interface ClickableLink {
+  x: number; y: number; w: number; h: number; url: string;
+}
+const clickableLinks: ClickableLink[] = [];
+
 // --- Скрытое поле для ввода ---
 const input = document.createElement('input');
 input.style.position = 'absolute';
@@ -89,7 +95,7 @@ function addImageToCanvas(url: string, startCol: number, startRow: number, width
 
 // --- Отрисовка ---
 function draw() {
-  // Очищаем фон (чтобы был виден CSS-градиент)
+  // Очищаем фон
   ctx.clearRect(0, 0, canvas.width, canvas.height);
 
   ctx.save();
@@ -103,7 +109,7 @@ function draw() {
 
   // 2. Рисуем текст
   ctx.font = FONT;
-  ctx.fillStyle = '#ffffff'; // Белый текст
+  ctx.fillStyle = '#ffffff';
   ctx.textAlign = 'center';
   ctx.textBaseline = 'middle';
   
@@ -124,7 +130,7 @@ function draw() {
   // 3. Рисуем курсор
   const cursorX = cursor.col * CELL_WIDTH;
   const cursorY = cursor.row * CELL_HEIGHT;
-  ctx.strokeStyle = 'rgba(0, 255, 255, 0.6)'; // Голубой неоновый курсор
+  ctx.strokeStyle = 'rgba(0, 255, 255, 0.6)';
   ctx.lineWidth = 1 / scale; 
   ctx.strokeRect(cursorX, cursorY, CELL_WIDTH, CELL_HEIGHT);
 
@@ -140,6 +146,19 @@ window.addEventListener('resize', resize);
 
 // --- Обработка мыши ---
 canvas.addEventListener('mousedown', (e) => {
+  if (e.button === 0) {
+    const mouseX = (e.clientX - offsetX) / scale;
+    const mouseY = (e.clientY - offsetY) / scale;
+
+    // Проверяем, не кликнули ли мы по ссылке
+    for (const link of clickableLinks) {
+      if (mouseX >= link.x && mouseX <= link.x + link.w && mouseY >= link.y && mouseY <= link.y + link.h) {
+        window.open(link.url, '_blank');
+        return; // Выходим, чтобы курсор не сдвигался
+      }
+    }
+  }
+
   input.focus(); 
   if (e.button === 2) {
     isPanning = true;
@@ -200,8 +219,24 @@ const commandPool: Record<string, CommandData> = {
     aliases: ['работы', 'проекты', 'галерея', 'мои работы'] 
   },
   'привет': { 
-    target: 'text:Привет! Это тестовый ответ.', 
+    target: 'text:Привет :)', 
     aliases: ['хай', 'здравствуй', 'приветствие'] 
+  },
+  'кто ты': {
+    target: '/about.json', 
+    aliases: ['био', 'ты', 'автор', 'о тебе', 'о себе'] 
+  },
+  'контакты': {
+    target: '/contacts.json', 
+    aliases: ['номер', 'почта', 'тг'] 
+  },
+  'стейтмент': {
+    target: '/statement.json', 
+    aliases: ['кредо', 'принципы'] 
+  },
+  'резюме': {
+    target: '/cv.json', 
+    aliases: ['cv'] 
   },
 };
 
@@ -245,7 +280,7 @@ async function loadLayout(jsonPath: string, startCol: number, startRow: number) 
     
     const objects = await response.json();
     
-    // Нормализация (чтобы лейаут не улетал вправо)
+    // Нормализация
     let minCol = Infinity;
     let minRow = Infinity;
     
@@ -261,11 +296,63 @@ async function loadLayout(jsonPath: string, startCol: number, startRow: number) 
       const relativeRow = obj.row - minRow;
 
       const finalCol = startCol + relativeCol;
-      // СДВИГ НА 1 КЛЕТКУ ВНИЗ (+1)
       const finalRow = startRow + relativeRow + 1;
 
       if (obj.type === 'text') {
-        writeTextToGrid(obj.content, finalCol, finalRow);
+        if (obj.scale && obj.scale > 1) {
+          const tScale = obj.scale;
+          const oldFont = ctx.font;
+          const oldAlign = ctx.textAlign;
+          const oldBaseline = ctx.textBaseline;
+          
+          ctx.font = `${20 * tScale}px "Courier New", monospace`;
+          ctx.textAlign = 'left';
+          ctx.textBaseline = 'top';
+          
+          const lines = obj.content.split('\n');
+          const px = finalCol * CELL_WIDTH;
+          const py = finalRow * CELL_HEIGHT;
+          
+          ctx.fillStyle = obj.link ? '#00ffff' : '#ffffff';
+          ctx.shadowColor = obj.link ? 'rgba(0, 255, 255, 0.8)' : 'rgba(255, 255, 255, 0.7)';
+          ctx.shadowBlur = 4;
+          
+          lines.forEach((line: string, index: number) => {
+            const lineY = py + index * CELL_HEIGHT * tScale;
+            ctx.fillText(line, px, lineY);
+            
+            if (obj.link) {
+              const textWidth = ctx.measureText(line).width;
+              ctx.beginPath();
+              ctx.moveTo(px, lineY + 20 * tScale);
+              ctx.lineTo(px + textWidth, lineY + 20 * tScale);
+              ctx.strokeStyle = '#00ffff';
+              ctx.lineWidth = 1;
+              ctx.stroke();
+            }
+          });
+          
+          ctx.shadowBlur = 0;
+          ctx.font = oldFont;
+          ctx.textAlign = oldAlign;
+          ctx.textBaseline = oldBaseline;
+        } else {
+          // Обычный текст
+          writeTextToGrid(obj.content, finalCol, finalRow);
+        }
+
+        // Сохраняем зону для клика, если есть ссылка
+        if (obj.link) {
+          const tScale = obj.scale || 1;
+          const lines = obj.content.split('\n');
+          clickableLinks.push({
+            x: finalCol * CELL_WIDTH,
+            y: finalRow * CELL_HEIGHT,
+            w: Math.max(...lines.map((l: string) => l.length)) * CELL_WIDTH * tScale,
+            h: lines.length * CELL_HEIGHT * tScale,
+            url: obj.link
+          });
+        }
       } else if (obj.type === 'image') {
         addImageToCanvas(obj.content, finalCol, finalRow, obj.width || 300);
       }
@@ -281,7 +368,6 @@ async function loadLayout(jsonPath: string, startCol: number, startRow: number) 
 
 // --- Обработка ввода с клавиатуры ---
 input.addEventListener('keyup', async (e) => {
-  // Запрещаем браузеру скроллить страницу стрелками
   if (['Enter', 'Backspace', 'ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown', ' '].includes(e.key)) {
     e.preventDefault();
   }
@@ -324,7 +410,6 @@ input.addEventListener('keyup', async (e) => {
       cursor.row = startRow + 2;
     }
   } 
-  // --- НОВОЕ: Перемещение стрелками ---
   else if (e.key === 'ArrowLeft') {
     if (cursor.col > 0) cursor.col -= 1;
   } 
@@ -341,7 +426,6 @@ input.addEventListener('keyup', async (e) => {
     cursor.col = 0;
   }
   else if (e.key === 'End') {
-    // Ищем конец текущей строки
     let endCol = 0;
     while (grid.has(getCellKey(endCol, cursor.row))) {
       endCol++;
@@ -370,21 +454,17 @@ window.addEventListener('keydown', (e) => {
 
 // --- Стартовый экран ---
 function initStartScreen() {
-  // Центр экрана в пикселях
   const centerX = window.innerWidth / 2;
   const centerY = window.innerHeight / 2;
 
-  // 1. Добавляем логотип по центру
-  const logoWidth = 600; // УВЕЛИЧЕНО В 2 РАЗА (было 300)
+  const logoWidth = 600; 
   const logoImg = new Image();
   logoImg.src = '/images/logo_black.png';
   
   logoImg.onload = () => {
     const logoHeight = logoWidth * (logoImg.height / logoImg.width);
-    
-    // Вычисляем координаты "мирового" пространства
-    const x = (centerX - logoWidth / 2 - offsetX) / scale - 15;
-    const y = (centerY - logoHeight / 2 - offsetY) / scale - 20; // Чуть выше центра
+    const x = (centerX - logoWidth / 2 - offsetX) / scale;
+    const y = (centerY - logoHeight / 2 - offsetY) / scale - 20; 
     
     images.push({ img: logoImg, x, y, width: logoWidth, height: logoHeight });
     drawStartText();
@@ -394,16 +474,11 @@ function initStartScreen() {
 function drawStartText() {
   const text = "Пиши + Enter";
   const centerCol = Math.floor((window.innerWidth / 2) / CELL_WIDTH);
-  
-  // Вычисляем, с какой колонки начать, чтобы текст был ровно по центру
   const startCol = centerCol - Math.floor(text.length / 2);
-  
-  // Ставим текст чуть ниже логотипа
-  const startRow = Math.floor((window.innerHeight / 2) / CELL_HEIGHT) + 6; // Сдвинули чуть ниже из-за размера
+  const startRow = Math.floor((window.innerHeight / 2) / CELL_HEIGHT) + 6; 
   
   writeTextToGrid(text, startCol, startRow);
   
-  // Ставим курсор чуть ниже надписи
   cursor.col = startCol;
   cursor.row = startRow + 3;
   

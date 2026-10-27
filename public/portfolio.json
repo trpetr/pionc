@@ -1,0 +1,545 @@
+[
+  {
+    "type": "image",
+    "content": "/images/VAC-172504690 1.png",
+    "col": 38,
+    "row": 15,
+    "width": 640.2524005486966
+  },
+  {
+    "type": "text",
+    "content": "Выставка аркадных автоматов на Проспекте в ГЭС-2.\nРезультат полугодовой работы детской студии безумных\nаркад «Жук», где я преподавал подросткам 10-14 лет\nгеймдизайн и Unity и затем реализовывал контроллеры\nдля автоматов с их играми — начиная с чертежа\nпод фрезеровку и заканчивая пайкой, прошивкой \nи проектированием пластиковых деталей.",
+    "col": 38,
+    "row": 7,
+    "scale": 1
+  },
+  {
+    "type": "image",
+    "content": "/images/VAC-172504595 1.png",
+    "col": 80,
+    "row": 7,
+    "width": 678.6008230452674
+  },
+  {
+    "type": "text",
+    "content": "публичные мероприятия",
+    "col": 80,
+    "row": 5,
+    "scale": 1
+  },
+  {
+    "type": "text",
+    "content": "12 — 21 июня 2026",
+    "col": 110,
+    "row": 5,
+    "scale": 1
+  },
+  {
+    "type": "text",
+    "content": "Часть одноименного гейм-перформанса, проходившего\nво время выставки НИИ Филаретова в ММОМА. Игра \nпро лепку полиморфов и коллективную сборку\n3D композиций на экране. Управляется через веб-камеру\nдвижениями рук игроков и сопровождается танцем\nперформеров, который по сути является физическим\nэкраном игры.",
+    "col": 38,
+    "row": 40,
+    "scale": 1
+  },
+  {
+    "type": "text",
+    "content": "публичные мероприятия",
+    "col": 82,
+    "row": 38,
+    "scale": 1
+  },
+  {
+    "type": "text",
+    "content": "22 мая — 30 июня 2024",
+    "col": 107,
+    "row": 38,
+    "scale": 1
+  },
+  {
+    "type": "image",
+    "content": "/images/image 150.png",
+    "col": 38,
+    "row": 50,
+    "width": 677.452178969177
+  },
+  {
+    "type": "image",
+    "content": "/images/image 149.png",
+    "col": 82,
+    "row": 40,
+    "width": 653.7743670043208
+  },
+  {
+    "type": "image",
+    "content": "/images/image 158.png",
+    "col": 82,
+    "row": 62,
+    "width": 652.3815545358
+  },
+  {
+    "type": "text",
+    "content": "НИИ Филератова",
+    "col": 38,
+    "row": 48,
+    "scale": 1,
+    "link": "https://design.hse.ru/news/3698"
+  },
+  {
+    "type": "text",
+    "content": "Рейв-игра живого действия, проходившая в клубе «Ровесник»,\nгде люди должны были водить хоровод и танцевать, чтобы\nпутешествовать по тундре и бороться с вьюгой.",
+    "col": 38,
+    "row": 75,
+    "scale": 1
+  },
+  {
+    "type": "text",
+    "content": "публичные мероприятия",
+    "col": 84,
+    "row": 73,
+    "scale": 1
+  },
+  {
+    "type": "text",
+    "content": "13 ноября 2025",
+    "col": 111,
+    "row": 73,
+    "scale": 1
+  },
+  {
+    "type": "image",
+    "content": "/images/image 160.png",
+    "col": 38,
+    "row": 79,
+    "width": 684.0426051818023
+  },
+  {
+    "type": "image",
+    "content": "/images/image 159.png",
+    "col": 84,
+    "row": 75,
+    "width": 606.3374866236168
+  },
+  {
+    "type": "text",
+    "content": "Вместе с группировкой представили на фестивале новые \nигровые автоматы, среди которых один управляется\nбольшим деревянным карандашом собственного производства.\nЯ проектировал панели, пластиковые детали и создавал\nэтот карандаш.",
+    "col": 38,
+    "row": 108,
+    "scale": 1
+  },
+  {
+    "type": "text",
+    "content": "фестивали",
+    "col": 84,
+    "row": 106,
+    "scale": 1
+  },
+  {
+    "type": "text",
+    "content": "24 октября 2026",
+    "col": 114,
+    "row": 106,
+    "scale": 1
+  },
+  {
+    "type": "image",
+    "content": "/images/image 160-1.png",
+    "col": 38,
+    "row": 114,
+    "width": 716.4194367421604
+  },
+  {
+    "type": "image",
+    "content": "/images/image 159-1.png",
+    "col": 84,
+    "row": 108,
+    "width": 648.5391523829367
+  },
+  {
+    "type": "text",
+    "content": "Выставили аркадный автомат, собранный под игры участников\nлетней Y-ART-лаборатории по геймдизайну. Я участвовал\nв проведении занятий по схемотехнике и альтернативному\nуправлению, а в дальнейшем отвечал за производство\nконтроллера — проектировал панель, пластиковые детали\nи паял электронику.",
+    "col": 38,
+    "row": 144,
+    "scale": 1
+  },
+  {
+    "type": "text",
+    "content": "фестивали",
+    "col": 85,
+    "row": 142,
+    "scale": 1
+  },
+  {
+    "type": "text",
+    "content": "24-27 сентября 2026",
+    "col": 112,
+    "row": 142,
+    "scale": 1
+  },
+  {
+    "type": "image",
+    "content": "/images/image 160-2.png",
+    "col": 38,
+    "row": 151,
+    "width": 728.7720121981182
+  },
+  {
+    "type": "image",
+    "content": "/images/image 159-2.png",
+    "col": 85,
+    "row": 144,
+    "width": 665.7885527791857
+  },
+  {
+    "type": "text",
+    "content": "Первая выставка, организованная арт-группировкой «Кавардак»,\nгде были представлены авторские игры с необычным управлением,\nи среди них три моих проекта — «Мой компьютер», Ex Ampulla\nи контроллер-коробка, в которую нужно стучать.",
+    "col": 38,
+    "row": 178,
+    "scale": 1
+  },
+  {
+    "type": "text",
+    "content": "самопальные выставки",
+    "col": 85,
+    "row": 176,
+    "scale": 1
+  },
+  {
+    "type": "text",
+    "content": "1-2 июня 2024",
+    "col": 118,
+    "row": 176,
+    "scale": 1
+  },
+  {
+    "type": "image",
+    "content": "/images/image 160-3.png",
+    "col": 38,
+    "row": 185,
+    "width": 723.2452350281079
+  },
+  {
+    "type": "image",
+    "content": "/images/image 159-3.png",
+    "col": 85,
+    "row": 178,
+    "width": 679.3401276600471
+  },
+  {
+    "type": "text",
+    "content": "Игра-инсталляция про общение фонариком и гадание на свете.\nЗритель должен расшифровывать вопросы, которые ему задаёт\nбог через световые анимации, и давать на них ответы,\nфонариком рисуя сквозь стекло символы, обозначающие образы\nиз японских хокку.",
+    "col": 38,
+    "row": 214,
+    "scale": 1
+  },
+  {
+    "type": "text",
+    "content": "инсталляции",
+    "col": 89,
+    "row": 212,
+    "scale": 1
+  },
+  {
+    "type": "text",
+    "content": "2025",
+    "col": 128,
+    "row": 212,
+    "scale": 1
+  },
+  {
+    "type": "text",
+    "content": "Участвовала в выставке «Завтра и послезавтра» в галерее\nКраснохолмская.",
+    "col": 38,
+    "row": 220,
+    "scale": 1,
+    "link": "https://kholmy.vzmoscow.ru/tomorrow"
+  },
+  {
+    "type": "image",
+    "content": "/images/image 152.png",
+    "col": 38,
+    "row": 223,
+    "width": 777.1717935019908
+  },
+  {
+    "type": "image",
+    "content": "/images/image 154.png",
+    "col": 89,
+    "row": 214,
+    "width": 685.9257765627387
+  },
+  {
+    "type": "text",
+    "content": "Игра-песочница про строительство домов из папок со своего\nкомпьютера. Игра читает иерархию загруженных в неё папок\nи на её основе выстраивает многоэтажный дом, где каждый\nэтаж — это ярус в иерархии, а каждая комната — отдельная\nпапка, внутри которой появляются интерактивные\nпредметы-отражения файлов, лежащих в этой папке.",
+    "col": 38,
+    "row": 250,
+    "scale": 1
+  },
+  {
+    "type": "text",
+    "content": "инсталляции",
+    "col": 84,
+    "row": 248,
+    "scale": 1
+  },
+  {
+    "type": "text",
+    "content": "2024",
+    "col": 121,
+    "row": 248,
+    "scale": 1
+  },
+  {
+    "type": "image",
+    "content": "/images/image 152-4.png",
+    "col": 38,
+    "row": 257,
+    "width": 707.0693968399248
+  },
+  {
+    "type": "image",
+    "content": "/images/image 154-4.png",
+    "col": 84,
+    "row": 250,
+    "width": 640.4252920475478
+  },
+  {
+    "type": "text",
+    "content": "Разрабатываемая в данный момент текстовая песочница,\nдля которой был создан собственный подъязык программирования\nдля написания гиперквестов. Является одновременно игрой\nи редактором для написания игроками собственных историй. ",
+    "col": 38,
+    "row": 285,
+    "scale": 1
+  },
+  {
+    "type": "text",
+    "content": "видеоигры",
+    "col": 85,
+    "row": 283,
+    "scale": 1
+  },
+  {
+    "type": "text",
+    "content": "2024 — ...",
+    "col": 114,
+    "row": 283,
+    "scale": 1
+  },
+  {
+    "type": "text",
+    "content": "Демо-версия победила в Лаборатории VK Play 2025",
+    "col": 38,
+    "row": 290,
+    "scale": 1,
+    "link": "https://vkplay.ru/laboratory"
+  },
+  {
+    "type": "text",
+    "content": "Выставлялась на выставке Электронарративы в HSE ART GALLERY",
+    "col": 38,
+    "row": 291,
+    "scale": 1,
+    "link": "https://art.hse.ru/gallery/elektronarrativy"
+  },
+  {
+    "type": "image",
+    "content": "/images/image 152-1.png",
+    "col": 38,
+    "row": 293,
+    "width": 730.4848931183275
+  },
+  {
+    "type": "image",
+    "content": "/images/image 154-1.png",
+    "col": 85,
+    "row": 285,
+    "width": 591.7931074693267
+  },
+  {
+    "type": "text",
+    "content": "Игра в ножички с роборукой. Перформанс-провокация\nна тему доверия современным технологиям.",
+    "col": 38,
+    "row": 317,
+    "scale": 1
+  },
+  {
+    "type": "text",
+    "content": "другие проекты",
+    "col": 78,
+    "row": 315,
+    "scale": 1
+  },
+  {
+    "type": "text",
+    "content": "2026",
+    "col": 111,
+    "row": 315,
+    "scale": 1
+  },
+  {
+    "type": "image",
+    "content": "/images/image 152-2.png",
+    "col": 38,
+    "row": 320,
+    "width": 606.2026436406514
+  },
+  {
+    "type": "image",
+    "content": "/images/image 154-2.png",
+    "col": 78,
+    "row": 317,
+    "width": 589.991915447911
+  },
+  {
+    "type": "text",
+    "content": "другие проекты",
+    "col": 78,
+    "row": 347,
+    "scale": 1
+  },
+  {
+    "type": "text",
+    "content": "2026",
+    "col": 116,
+    "row": 347,
+    "scale": 1
+  },
+  {
+    "type": "image",
+    "content": "/images/image 161.png",
+    "col": 38,
+    "row": 349,
+    "width": 617.2238809440632
+  },
+  {
+    "type": "image",
+    "content": "/images/image 152-3.png",
+    "col": 38,
+    "row": 362,
+    "width": 617.2238809440632
+  },
+  {
+    "type": "image",
+    "content": "/images/image 154-3.png",
+    "col": 78,
+    "row": 349,
+    "width": 653.136018409429
+  },
+  {
+    "type": "text",
+    "content": "Симулятор ухода за бабушкой",
+    "col": 38,
+    "row": 360,
+    "scale": 1,
+    "link": "Симулятор ухода за бабушкой"
+  },
+  {
+    "type": "text",
+    "content": "Компьютерный бонсай, где режешь ветки\nи удаляешь настоящие файлы и папки",
+    "col": 38,
+    "row": 376,
+    "scale": 1,
+    "link": "https://pionc.itch.io/dirbonsai"
+  },
+  {
+    "type": "text",
+    "content": "Виртуальная выставка по мотивам\nстуденческого мокьюментари",
+    "col": 78,
+    "row": 376,
+    "scale": 1,
+    "link": "https://pionc.itch.io/the-hitchhikers-guide-to-the-death"
+  },
+  {
+    "type": "text",
+    "content": "Аркадный центр «ЦФЫВ»",
+    "col": 38,
+    "row": 5,
+    "scale": 1,
+    "link": "https://ges-2.org/projects/wasd-arcade-center"
+  },
+  {
+    "type": "text",
+    "content": "Осознанный сон",
+    "col": 38,
+    "row": 38,
+    "scale": 1,
+    "link": "https://hsedesign.ru/project/45c4d2ca721e4b84baefcfc69af28b14"
+  },
+  {
+    "type": "text",
+    "content": "Танец вечности",
+    "col": 38,
+    "row": 73,
+    "scale": 1,
+    "link": "https://kinescope.io/pNfVq3hx2dnpwuKvRwukp3"
+  },
+  {
+    "type": "text",
+    "content": "Game Punkz vol.2 2026",
+    "col": 38,
+    "row": 106,
+    "scale": 1,
+    "link": "https://gamedevafisha.ru/event/758"
+  },
+  {
+    "type": "text",
+    "content": "blazar",
+    "col": 38,
+    "row": 142,
+    "scale": 1
+  },
+  {
+    "type": "text",
+    "content": "Мешать деревьям стоять на месте",
+    "col": 38,
+    "row": 176,
+    "scale": 1,
+    "link": "https://hsedesign.ru/project/vystavka-meshat-derevyam-stoyat-na-meste--1ce21eed64a445fe855c19aec1a77efc"
+  },
+  {
+    "type": "text",
+    "content": "itch.io",
+    "col": 38,
+    "row": 183,
+    "scale": 1,
+    "link": "https://pionc.itch.io/"
+  },
+  {
+    "type": "text",
+    "content": "itch.io",
+    "col": 38,
+    "row": 347,
+    "scale": 1,
+    "link": "https://pionc.itch.io/"
+  },
+  {
+    "type": "text",
+    "content": "Бог забытого НИИ",
+    "col": 38,
+    "row": 212,
+    "scale": 1,
+    "link": "https://youtu.be/CAZ3YDpKpu4?si=aO5Gzf2G5OOTuCez"
+  },
+  {
+    "type": "text",
+    "content": "Мой компьютер",
+    "col": 38,
+    "row": 248,
+    "scale": 1,
+    "link": "https://pionc.itch.io/mycomputer"
+  },
+  {
+    "type": "text",
+    "content": "LifeOS",
+    "col": 38,
+    "row": 283,
+    "scale": 1,
+    "link": "https://store.steampowered.com/app/3712650/LifeOS/?l=russian"
+  },
+  {
+    "type": "text",
+    "content": "Идеальная точность",
+    "col": 38,
+    "row": 315,
+    "scale": 1,
+    "link": "https://www.youtube.com/watch?v=sRjzNoUAXrs"
+  }
+]
