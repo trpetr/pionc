@@ -2,7 +2,12 @@
 import * as fuzz from 'fuzzball';
 
 const canvas = document.createElement('canvas');
-document.body.appendChild(canvas);
+const container = document.getElementById('crt-container');
+if (container) {
+  container.appendChild(canvas);
+} else {
+  document.body.appendChild(canvas);
+}
 const ctx = canvas.getContext('2d')!;
 
 // --- Конфигурация ---
@@ -84,21 +89,27 @@ function addImageToCanvas(url: string, startCol: number, startRow: number, width
 
 // --- Отрисовка ---
 function draw() {
-  ctx.fillStyle = '#f5f0e6';
-  ctx.fillRect(0, 0, canvas.width, canvas.height);
+  // Очищаем фон (чтобы был виден CSS-градиент)
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
 
   ctx.save();
   ctx.translate(offsetX, offsetY);
   ctx.scale(scale, scale);
 
+  // 1. Рисуем картинки
   for (const imgData of images) {
     ctx.drawImage(imgData.img, imgData.x, imgData.y, imgData.width, imgData.height);
   }
 
+  // 2. Рисуем текст
   ctx.font = FONT;
-  ctx.fillStyle = '#333';
+  ctx.fillStyle = '#ffffff'; // Белый текст
   ctx.textAlign = 'center';
   ctx.textBaseline = 'middle';
+  
+  // Неоновое свечение для текста
+  ctx.shadowColor = 'rgba(255, 255, 255, 0.7)';
+  ctx.shadowBlur = 4;
 
   for (const [key, char] of grid.entries()) {
     const [col, row] = key.split(',').map(Number);
@@ -107,9 +118,13 @@ function draw() {
     ctx.fillText(char, x, y);
   }
 
+  // Отключаем свечение для курсора
+  ctx.shadowBlur = 0;
+
+  // 3. Рисуем курсор
   const cursorX = cursor.col * CELL_WIDTH;
   const cursorY = cursor.row * CELL_HEIGHT;
-  ctx.strokeStyle = 'rgba(0, 0, 0, 0.3)';
+  ctx.strokeStyle = 'rgba(0, 255, 255, 0.6)'; // Голубой неоновый курсор
   ctx.lineWidth = 1 / scale; 
   ctx.strokeRect(cursorX, cursorY, CELL_WIDTH, CELL_HEIGHT);
 
@@ -175,8 +190,8 @@ canvas.addEventListener('wheel', (e) => {
 
 // --- Пул команд и парсер ---
 interface CommandData {
-  target: string;      // Что выводим (текст или путь к JSON)
-  aliases: string[];   // Синонимы
+  target: string;      
+  aliases: string[];   
 }
 
 const commandPool: Record<string, CommandData> = {
@@ -184,20 +199,22 @@ const commandPool: Record<string, CommandData> = {
     target: '/portfolio.json', 
     aliases: ['работы', 'проекты', 'галерея', 'мои работы'] 
   },
+  'привет': { 
+    target: 'text:Привет! Это тестовый ответ.', 
+    aliases: ['хай', 'здравствуй', 'приветствие'] 
+  },
 };
 
 function parseCommand(input: string): string | null {
   const normalized = input.trim().toLowerCase();
   if (!normalized) return null;
 
-  // 1. Ищем точное совпадение (включая синонимы)
   for (const [key, data] of Object.entries(commandPool)) {
     if (key === normalized || data.aliases.includes(normalized)) {
       return data.target;
     }
   }
 
-  // 2. Нечёткий поиск по всем ключам и синонимам
   const allTerms: { term: string, target: string }[] = [];
   
   for (const [key, data] of Object.entries(commandPool)) {
@@ -220,6 +237,7 @@ function parseCommand(input: string): string | null {
   return null;
 }
 
+// --- Загрузка JSON-лейаута ---
 async function loadLayout(jsonPath: string, startCol: number, startRow: number) {
   try {
     const response = await fetch(jsonPath);
@@ -227,9 +245,7 @@ async function loadLayout(jsonPath: string, startCol: number, startRow: number) 
     
     const objects = await response.json();
     
-    // Находим минимальные координаты X и Y среди всех объектов в JSON.
-    // Это позволит нам "нормализовать" лейаут, чтобы он начинался с 0,0,
-    // независимо от того, где вы нарисовали его в редакторе.
+    // Нормализация (чтобы лейаут не улетал вправо)
     let minCol = Infinity;
     let minRow = Infinity;
     
@@ -238,17 +254,14 @@ async function loadLayout(jsonPath: string, startCol: number, startRow: number) 
       if (obj.row < minRow) minRow = obj.row;
     });
 
-    // Если объектов нет, ничего не делаем
     if (minCol === Infinity) return;
 
-    // Проходимся по объектам и рисуем их со смещением
     objects.forEach((obj: any) => {
-      // Вычисляем относительную позицию (отнимаем минимальную)
       const relativeCol = obj.col - minCol;
       const relativeRow = obj.row - minRow;
 
-      // Итоговая позиция = позиция команды + относительная позиция
       const finalCol = startCol + relativeCol;
+      // СДВИГ НА 1 КЛЕТКУ ВНИЗ (+1)
       const finalRow = startRow + relativeRow + 1;
 
       if (obj.type === 'text') {
@@ -292,20 +305,18 @@ input.addEventListener('keyup', async (e) => {
 
     const startRow = cursor.row + 1;
     
-    // --- ВЫЗОВ ПАРСЕРА ---
     const result = parseCommand(command);
     
     if (result) {
       if (result.startsWith('text:')) {
-        // Текстовый ответ
         const textResponse = result.replace('text:', '');
         writeTextToGrid(textResponse, firstCharCol, startRow);
         cursor.row = startRow + textResponse.split('\n').length + 1;
       } else if (result.endsWith('.json')) {
-        // Вызываем функцию загрузки
-        loadLayout(result, firstCharCol, startRow);
-        // Сдвигаем курсор вниз, чтобы он не наложился на лейаут (примерно)
-        cursor.row = startRow + 30;
+        writeTextToGrid('Загрузка...', firstCharCol, startRow);
+        draw();
+        await loadLayout(result, firstCharCol, startRow);
+        cursor.row = startRow + 30; 
       }
     } else {
       writeTextToGrid('Команда не найдена.', firstCharCol, startRow);

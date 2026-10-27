@@ -8,14 +8,77 @@
       body {
         margin: 0;
         overflow: hidden;
-        background-color: #f5f0e6;
+        background-color: #000;
+        font-family: "Courier New", monospace;
       }
+
+      /* Контейнер для ЭЛТ-эффекта */
+      #crt-container {
+        position: relative;
+        width: 100vw;
+        height: 100vh;
+        overflow: hidden;
+        background: radial-gradient(circle, #0a2a43 0%, #000000 100%);
+        /* Легкое свечение текста */
+        text-shadow: 0 0 5px rgba(255, 255, 255, 0.5);
+      }
+
+      /* Сам холст */
       canvas {
         display: block;
+        position: relative;
+        z-index: 1;
+      }
+
+      /* Эффект Scanlines (горизонтальные полосы) */
+      #crt-container::before {
+        content: " ";
+        display: block;
+        position: absolute;
+        top: 0;
+        left: 0;
+        bottom: 0;
+        right: 0;
+        background: linear-gradient(
+          to bottom,
+          rgba(18, 16, 16, 0) 50%,
+          rgba(0, 0, 0, 0.25) 50%
+        );
+        background-size: 100% 4px;
+        z-index: 2;
+        pointer-events: none; /* Чтобы не мешало кликам */
+      }
+
+      /* Виньетка (затемнение по краям) и мерцание */
+      #crt-container::after {
+        content: " ";
+        display: block;
+        position: absolute;
+        top: 0;
+        left: 0;
+        bottom: 0;
+        right: 0;
+        background: radial-gradient(
+          circle,
+          rgba(0, 0, 0, 0) 60%,
+          rgba(0, 0, 0, 0.6) 100%
+        );
+        z-index: 2;
+        pointer-events: none;
+        animation: flicker 0.15s infinite;
+      }
+
+      @keyframes flicker {
+        0% { opacity: 0.95; }
+        50% { opacity: 1; }
+        100% { opacity: 0.95; }
       }
     </style>
   </head>
   <body>
+    <div id="crt-container">
+      <!-- Холст создается динамически в main.ts, но мы можем добавить его сюда -->
+    </div>
     <script type="module" src="/src/main.ts"></script>
   </body>
 </html>
