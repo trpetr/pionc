@@ -14,9 +14,12 @@ const FONT = '20px "Courier New", monospace';
 let cursor = { col: 0, row: 0 };
 const grid = new Map<string, string>(); 
 
-// Смещение камеры (в пикселях)
+// Смещение камеры
 let offsetX = 0;
 let offsetY = 0;
+
+// Масштаб (1 = 100%)
+let scale = 1;
 
 // Состояние для перетаскивания
 let isPanning = false;
@@ -42,9 +45,6 @@ input.style.top = '0';
 input.style.width = '1px';
 input.style.height = '1px';
 input.setAttribute('autocomplete', 'off'); 
-input.setAttribute('autocorrect', 'off');
-input.setAttribute('autocapitalize', 'off');
-input.setAttribute('spellcheck', 'false');
 document.body.appendChild(input);
 
 // --- Вспомогательные функции ---
@@ -53,21 +53,24 @@ function getCellKey(col: number, row: number) {
 }
 
 function writeTextToGrid(text: string, startCol: number, startRow: number) {
+  let currentCol = startCol;
+  let currentRow = startRow;
+
   for (let i = 0; i < text.length; i++) {
-    if (text[i] === '\n') {
-      startRow++;
-      startCol = 0;
-    } else {
-      grid.set(getCellKey(startCol, startRow), text[i]);
-      startCol++;
+    const char = text[i];
+    if (char === '\n') {
+      currentRow++;
+      currentCol = startCol; 
+      continue;
     }
+    grid.set(getCellKey(currentCol, currentRow), char);
+    currentCol++;
   }
 }
 
 function addImageToCanvas(url: string, startCol: number, startRow: number, width: number = 400) {
   const img = new Image();
   img.src = url;
-  
   img.onload = () => {
     const aspectRatio = img.height / img.width;
     const height = width * aspectRatio;
@@ -76,30 +79,22 @@ function addImageToCanvas(url: string, startCol: number, startRow: number, width
     images.push({ img, x, y, width, height });
     draw(); 
   };
-  
-  img.onerror = () => {
-    console.error('Не удалось загрузить картинку:', url);
-    writeTextToGrid('[Ошибка загрузки картинки]', startCol, startRow);
-    draw();
-  };
+  img.onerror = () => console.error('Ошибка картинки:', url);
 }
 
+// --- Отрисовка ---
 function draw() {
-  // Очистка фона
   ctx.fillStyle = '#f5f0e6';
   ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-  // 1. Рисуем картинки (под текстом)
+  ctx.save();
+  ctx.translate(offsetX, offsetY);
+  ctx.scale(scale, scale);
+
   for (const imgData of images) {
-    const drawX = imgData.x + offsetX;
-    const drawY = imgData.y + offsetY;
-    if (drawX > -imgData.width && drawX < canvas.width && 
-        drawY > -imgData.height && drawY < canvas.height) {
-      ctx.drawImage(imgData.img, drawX, drawY, imgData.width, imgData.height);
-    }
+    ctx.drawImage(imgData.img, imgData.x, imgData.y, imgData.width, imgData.height);
   }
 
-  // 2. Рисуем текст
   ctx.font = FONT;
   ctx.fillStyle = '#333';
   ctx.textAlign = 'center';
@@ -107,21 +102,18 @@ function draw() {
 
   for (const [key, char] of grid.entries()) {
     const [col, row] = key.split(',').map(Number);
-    const x = col * CELL_WIDTH + CELL_WIDTH / 2 + offsetX;
-    const y = row * CELL_HEIGHT + CELL_HEIGHT / 2 + offsetY;
-    
-    if (x > -CELL_WIDTH && x < canvas.width + CELL_WIDTH && 
-        y > -CELL_HEIGHT && y < canvas.height + CELL_HEIGHT) {
-      ctx.fillText(char, x, y);
-    }
+    const x = col * CELL_WIDTH + CELL_WIDTH / 2;
+    const y = row * CELL_HEIGHT + CELL_HEIGHT / 2;
+    ctx.fillText(char, x, y);
   }
 
-  // 3. Рисуем курсор
-  const cursorX = cursor.col * CELL_WIDTH + offsetX;
-  const cursorY = cursor.row * CELL_HEIGHT + offsetY;
+  const cursorX = cursor.col * CELL_WIDTH;
+  const cursorY = cursor.row * CELL_HEIGHT;
   ctx.strokeStyle = 'rgba(0, 0, 0, 0.3)';
-  ctx.lineWidth = 1;
+  ctx.lineWidth = 1 / scale; 
   ctx.strokeRect(cursorX, cursorY, CELL_WIDTH, CELL_HEIGHT);
+
+  ctx.restore();
 }
 
 function resize() {
@@ -134,14 +126,13 @@ window.addEventListener('resize', resize);
 // --- Обработка мыши ---
 canvas.addEventListener('mousedown', (e) => {
   input.focus(); 
-  
   if (e.button === 2) {
     isPanning = true;
     lastMouseX = e.clientX;
     lastMouseY = e.clientY;
   } else if (e.button === 0) {
-    const mouseX = e.clientX - offsetX;
-    const mouseY = e.clientY - offsetY;
+    const mouseX = (e.clientX - offsetX) / scale;
+    const mouseY = (e.clientY - offsetY) / scale;
     cursor.col = Math.floor(mouseX / CELL_WIDTH);
     cursor.row = Math.floor(mouseY / CELL_HEIGHT);
     draw();
@@ -161,15 +152,80 @@ window.addEventListener('mousemove', (e) => {
 });
 
 window.addEventListener('mouseup', (e) => {
-  if (e.button === 2) {
-    isPanning = false;
-  }
+  if (e.button === 2) isPanning = false;
 });
 
 canvas.addEventListener('contextmenu', (e) => e.preventDefault());
 
+// --- Обработка зума ---
+canvas.addEventListener('wheel', (e) => {
+  e.preventDefault(); 
+  const zoomDirection = e.deltaY < 0 ? 1 : -1;
+  const zoomFactor = 1.1; 
+  const newScale = zoomDirection > 0 ? scale * zoomFactor : scale / zoomFactor;
+  if (newScale < 0.1 || newScale > 5) return;
+
+  const mouseX = e.clientX;
+  const mouseY = e.clientY;
+  offsetX = mouseX - (mouseX - offsetX) * (newScale / scale);
+  offsetY = mouseY - (mouseY - offsetY) * (newScale / scale);
+  scale = newScale;
+  draw();
+}, { passive: false });
+
+// --- Пул команд и парсер ---
+interface CommandData {
+  target: string;      // Что выводим (текст или путь к JSON)
+  aliases: string[];   // Синонимы
+}
+
+const commandPool: Record<string, CommandData> = {
+  'портфолио': { 
+    target: '/portfolio.json', 
+    aliases: ['работы', 'проекты', 'галерея', 'мои работы'] 
+  },
+  'привет': { 
+    target: 'text:Привет! Это тестовый ответ.', 
+    aliases: ['хай', 'здравствуй', 'приветствие'] 
+  },
+};
+
+function parseCommand(input: string): string | null {
+  const normalized = input.trim().toLowerCase();
+  if (!normalized) return null;
+
+  // 1. Ищем точное совпадение (включая синонимы)
+  for (const [key, data] of Object.entries(commandPool)) {
+    if (key === normalized || data.aliases.includes(normalized)) {
+      return data.target;
+    }
+  }
+
+  // 2. Нечёткий поиск по всем ключам и синонимам
+  const allTerms: { term: string, target: string }[] = [];
+  
+  for (const [key, data] of Object.entries(commandPool)) {
+    allTerms.push({ term: key, target: data.target });
+    data.aliases.forEach(alias => allTerms.push({ term: alias, target: data.target }));
+  }
+
+  const availableTerms = allTerms.map(t => t.term);
+  const results = fuzz.extract(normalized, availableTerms, { limit: 1, cutoff: 50 });
+
+  if (results.length > 0) {
+    const bestTerm = results[0][0] as string;
+    const match = allTerms.find(t => t.term === bestTerm);
+    if (match) {
+      console.log(`🤔 Распознано как "${bestTerm}"`);
+      return match.target;
+    }
+  }
+
+  return null;
+}
+
 // --- Обработка ввода с клавиатуры ---
-input.addEventListener('keyup', (e) => {
+input.addEventListener('keyup', async (e) => {
   if (['Enter', 'Backspace', 'ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown', ' '].includes(e.key)) {
     e.preventDefault();
   }
@@ -181,46 +237,37 @@ input.addEventListener('keyup', (e) => {
     for (let c = 0; c < cursor.col; c++) {
       const char = grid.get(getCellKey(c, cursor.row)) || ' ';
       lineText += char;
-      
-      if (char !== ' ' && firstCharCol === -1) {
-        firstCharCol = c;
-      }
+      if (char !== ' ' && firstCharCol === -1) firstCharCol = c;
     }
     
     const command = lineText.trim();
-    
     if (!command) {
-      cursor.row += 1; // Если пустая строка, просто спускаемся на одну вниз
+      cursor.row += 1; 
       draw();
       return;
     }
-
     if (firstCharCol === -1) firstCharCol = 0;
 
+    const startRow = cursor.row + 1;
+    
+    // --- ВЫЗОВ ПАРСЕРА ---
     const result = parseCommand(command);
     
     if (result) {
-      console.log('✅ Команда найдена:', command);
-      
-      const startCol = firstCharCol; 
-      const startRow = cursor.row + 1; 
-      
-      if (result.type === 'image') {
-        addImageToCanvas(result.payload, startCol, startRow, 400); 
-        cursor.row = startRow + 15; 
-      } else {
-        writeTextToGrid(result.payload, startCol, startRow);
-        cursor.row = startRow + result.payload.split('\n').length + 1;
+      if (result.startsWith('text:')) {
+        // Текстовый ответ
+        const textResponse = result.replace('text:', '');
+        writeTextToGrid(textResponse, firstCharCol, startRow);
+        cursor.row = startRow + textResponse.split('\n').length + 1;
+      } else if (result.endsWith('.json')) {
+        // Заглушка для JSON-лейаута
+        writeTextToGrid(`[Здесь загрузится файл ${result}]`, firstCharCol, startRow);
+        cursor.row = startRow + 2;
       }
-      
     } else {
-      console.log('❌ Команда не найдена:', command);
-      writeTextToGrid('Команда не найдена...', firstCharCol, cursor.row + 1);
-      cursor.row += 2;
+      writeTextToGrid('Команда не найдена.', firstCharCol, startRow);
+      cursor.row = startRow + 2;
     }
-
-    // Убрали cursor.col = 0; — колонка остается на месте (в конце введенного слова)
-    
   } else if (e.key === 'Backspace') {
     if (cursor.col > 0) {
       cursor.col -= 1;
@@ -230,147 +277,12 @@ input.addEventListener('keyup', (e) => {
     grid.set(getCellKey(cursor.col, cursor.row), e.key);
     cursor.col += 1;
   }
-  
   draw();
-});
-
-// --- Парсер команд и LocalStorage ---
-interface CommandResponse {
-  type: 'text' | 'image' | 'html';
-  payload: string;
-}
-
-const defaultCommands: Record<string, CommandResponse> = {
-  'привет': { type: 'text', payload: 'Привет, мир! Это тестовый ответ на холсте.' },
-  'портфолио': { type: 'html', payload: 'Мое портфолио: Работа 1, Работа 2. (Тут будут картинки)' },
-  'время': { type: 'text', payload: 'Текущее время: ' + new Date().toLocaleTimeString() },
-  'кот': { type: 'image', payload: 'https://upload.wikimedia.org/wikipedia/commons/thumb/3/3a/Cat03.jpg/800px-Cat03.jpg' }, 
-};
-
-let commandPool: Record<string, CommandResponse> = JSON.parse(
-  localStorage.getItem('my_commands') || JSON.stringify(defaultCommands)
-);
-
-function saveCommandsToStorage() {
-  localStorage.setItem('my_commands', JSON.stringify(commandPool));
-}
-
-function parseCommand(input: string): CommandResponse | null {
-  const normalized = input.trim().toLowerCase();
-  if (!normalized) return null;
-
-  if (commandPool[normalized]) {
-    return commandPool[normalized];
-  }
-
-  const availableCommands = Object.keys(commandPool);
-  
-  const results = fuzz.extract(normalized, availableCommands, {
-    limit: 1,
-    cutoff: 50 
-  });
-
-  if (results.length > 0) {
-    const bestMatchKey = results[0][0] as string;
-    console.log(`🤔 Вы имели в виду "${bestMatchKey}"?`);
-    return commandPool[bestMatchKey];
-  }
-
-  return null;
-}
-
-// --- Логика Панели Администратора ---
-const adminPanel = document.getElementById('admin-panel')!;
-const commandsList = document.getElementById('commands-list')!;
-const addCommandBtn = document.getElementById('add-command-btn')!;
-const closeAdminBtn = document.getElementById('close-admin-btn')!;
-
-function renderAdminPanel() {
-  commandsList.innerHTML = '';
-  
-  for (const [key, cmd] of Object.entries(commandPool)) {
-    const div = document.createElement('div');
-    div.className = 'command-item';
-    
-    div.innerHTML = `
-      <input type="text" value="${key}" placeholder="Команда (без пробелов)" class="cmd-key" />
-      <select class="cmd-type">
-        <option value="text" ${cmd.type === 'text' ? 'selected' : ''}>Текст</option>
-        <option value="image" ${cmd.type === 'image' ? 'selected' : ''}>Картинка (URL)</option>
-      </select>
-      <textarea class="cmd-payload" rows="2" placeholder="Ответ">${cmd.payload}</textarea>
-      <button class="delete-btn" style="background:#f44336; color:white; border:none;">Удалить</button>
-    `;
-
-    const keyInput = div.querySelector('.cmd-key') as HTMLInputElement;
-    const typeSelect = div.querySelector('.cmd-type') as HTMLSelectElement;
-    const payloadInput = div.querySelector('.cmd-payload') as HTMLTextAreaElement;
-    const deleteBtn = div.querySelector('.delete-btn') as HTMLButtonElement;
-
-    keyInput.addEventListener('change', () => {
-      const newKey = keyInput.value.trim().toLowerCase();
-      if (newKey && newKey !== key) {
-        commandPool[newKey] = commandPool[key];
-        delete commandPool[key];
-        saveCommandsToStorage();
-        renderAdminPanel();
-      }
-    });
-
-    typeSelect.addEventListener('change', () => {
-      commandPool[key].type = typeSelect.value as 'text' | 'image';
-      saveCommandsToStorage();
-    });
-
-    payloadInput.addEventListener('input', () => {
-      commandPool[key].payload = payloadInput.value;
-      saveCommandsToStorage();
-    });
-
-    deleteBtn.addEventListener('click', () => {
-      delete commandPool[key];
-      saveCommandsToStorage();
-      renderAdminPanel();
-    });
-
-    commandsList.appendChild(div);
-  }
-}
-
-addCommandBtn.addEventListener('click', () => {
-  const newKey = prompt('Введите название команды (например, "обо мне"):');
-  if (newKey) {
-    const key = newKey.trim().toLowerCase();
-    commandPool[key] = { type: 'text', payload: 'Новый ответ' };
-    saveCommandsToStorage();
-    renderAdminPanel();
-  }
-});
-
-// Обработка Shift + A для открытия панели
-window.addEventListener('keydown', (e) => {
-  // Проверяем, что зажат Shift и нажата клавиша A
-  if (e.shiftKey && e.code === 'KeyA') {
-    e.preventDefault();
-    
-    if (adminPanel.style.display === 'block') {
-      adminPanel.style.display = 'none';
-      input.focus(); // Возвращаем фокус на холст при закрытии
-    } else {
-      adminPanel.style.display = 'block';
-      renderAdminPanel();
-    }
-  }
-});
-
-closeAdminBtn.addEventListener('click', () => {
-  adminPanel.style.display = 'none';
-  input.focus();
 });
 
 // Страховка для фокуса
 window.addEventListener('keydown', (e) => {
-  if (document.activeElement !== input && e.key !== 'F12' && adminPanel.style.display !== 'block') {
+  if (document.activeElement !== input && e.key !== 'F12') {
     input.focus();
   }
 });

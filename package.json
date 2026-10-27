@@ -13,6 +13,8 @@
     "vite": "^8.3.4"
   },
   "dependencies": {
+    "@agntk/search": "^1.2.7",
+    "@purili/web-search": "^0.1.0",
     "fuzzball": "^2.2.6",
     "quickfuzz": "^1.0.2"
   }

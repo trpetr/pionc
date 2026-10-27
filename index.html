@@ -3,7 +3,7 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>My Typewriter Site</title>
+    <title>Site</title>
     <style>
       body {
         margin: 0;
@@ -13,56 +13,9 @@
       canvas {
         display: block;
       }
-      
-      /* Стили для панели администратора */
-      #admin-panel {
-        position: fixed;
-        top: 20px;
-        right: 20px;
-        width: 400px;
-        max-height: 80vh;
-        background: #fff;
-        border: 1px solid #ccc;
-        box-shadow: 0 4px 12px rgba(0,0,0,0.15);
-        padding: 15px;
-        font-family: sans-serif;
-        display: none; /* Скрыто по умолчанию */
-        overflow-y: auto;
-        z-index: 1000;
-      }
-      #admin-panel h3 {
-        margin-top: 0;
-      }
-      #admin-panel .command-item {
-        border: 1px solid #eee;
-        padding: 10px;
-        margin-bottom: 10px;
-        background: #fafafa;
-      }
-      #admin-panel input, #admin-panel select, #admin-panel textarea {
-        width: 100%;
-        margin-bottom: 5px;
-        box-sizing: border-box;
-        font-family: monospace;
-      }
-      #admin-panel button {
-        cursor: pointer;
-        padding: 5px 10px;
-      }
     </style>
   </head>
   <body>
-    <!-- Наша панель администратора -->
-    <div id="admin-panel">
-      <h3>Управление командами</h3>
-      <div id="commands-list"></div>
-      <button id="add-command-btn" style="background: #4CAF50; color: white; border: none;">+ Добавить команду</button>
-      <button id="close-admin-btn" style="background: #f44336; color: white; border: none; float: right;">Закрыть</button>
-      <p style="font-size: 12px; color: #888; clear: both; margin-top: 15px;">
-        Нажмите <b>Ctrl + Shift + A</b>, чтобы открыть/закрыть панель.
-      </p>
-    </div>
-
     <script type="module" src="/src/main.ts"></script>
   </body>
 </html>
